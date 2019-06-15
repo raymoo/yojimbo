@@ -133,6 +133,12 @@
 
 #define YOJIMBO_ENABLE_LOGGING                      1
 
+// For PRIu64
+#ifdef __MINGW32__
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+#endif
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <stddef.h>

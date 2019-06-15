@@ -9,8 +9,15 @@ solution "Yojimbo"
     platforms { "x64" }
     configurations { "Debug", "Release" }
     if os.istarget "windows" then
-        includedirs { ".", "./windows", "netcode.io", "reliable.io" }
-        libdirs { "./windows" }
+        includedirs { ".", "netcode.io", "reliable.io" }
+        if os.ishost "windows" then
+            libdirs { "./windows" }
+            includedirs { "./windows" }
+        else
+            libdirs { "./mingw" }
+            includedirs { "./mingw" }
+            libs = { libs, "ws2_32", "wsock32", "iphlpapi" }
+        end
     else
         includedirs { ".", "/usr/local/include", "netcode.io", "reliable.io" }
         targetdir "bin/"  
@@ -20,6 +27,11 @@ solution "Yojimbo"
     warnings "Extra"
     floatingpoint "Fast"
     vectorextensions "SSE2"
+    configuration { "linux", "gmake" }
+        if os.istarget "windows" then
+            buildoptions { "-static-libgcc", "-static-libstdc++" }
+            linkoptions { "-static-libgcc", "-static-libstdc++" }
+        end
     configuration "Debug"
         symbols "On"
     configuration "Release"
@@ -63,7 +75,7 @@ project "soak"
     files { "soak.cpp", "shared.h" }
     links { "yojimbo" }
 
-if not os.istarget "windows" then
+if not os.ishost "windows" then
 
     -- MacOSX and Linux.
     
@@ -295,7 +307,7 @@ if not os.istarget "windows" then
         trigger     = "docs",
         description = "Build documentation",
         execute = function ()
-            if os.get() == "macosx" then
+            if os.ishost "macosx" then
                 os.execute "doxygen doxygen.config && open docs/html/index.html"
             else
                 os.execute "doxygen doxygen.config"
